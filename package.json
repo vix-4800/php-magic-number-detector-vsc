@@ -23,18 +23,13 @@
         "configuration": {
             "title": "PHP Magic Number Detector",
             "properties": {
-                "phpmnd.executablePath": {
-                    "type": "string",
-                    "default": "phpmnd",
-                    "description": "Path to the phpmnd executable. If phpmnd is in your PATH, use 'phpmnd'. Otherwise, provide the full path."
-                },
                 "phpmnd.ignoreNumbers": {
                     "type": "array",
                     "default": [],
                     "items": {
                         "type": "string"
                     },
-                    "description": "Numbers to ignore (e.g., ['0', '1'])"
+                    "description": "Numbers to ignore (e.g., ['0', '1', '100'])"
                 },
                 "phpmnd.ignoreStrings": {
                     "type": "array",
