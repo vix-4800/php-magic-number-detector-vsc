@@ -61,11 +61,12 @@ async function checkDocument(document: vscode.TextDocument, extensionPath: strin
     const config = vscode.workspace.getConfiguration('phpmnd');
     const ignoreNumbers = config.get<string[]>('ignoreNumbers', []);
     const ignoreStrings = config.get<string[]>('ignoreStrings', []);
+    const extensions = config.get<string>('extensions', 'all');
 
     const phpmndPath = path.join(extensionPath, 'phpmnd.phar');
     outputChannel.appendLine(`Using phpmnd: ${phpmndPath}`);
 
-    let command = `php "${phpmndPath}" "${filePath}" --hint`;
+    let command = `php "${phpmndPath}" "${filePath}" --hint --extensions=${extensions}`;
 
     if (ignoreNumbers.length > 0) {
       command += ` --ignore-numbers=${ignoreNumbers.join(',')}`;
@@ -173,7 +174,7 @@ function parsePhpmndOutput(output: string, document: vscode.TextDocument): vscod
   const lines = output.split('\n');
 
   for (const line of lines) {
-    const match = line.match(/^.*?:(\d+):?\s+(.+)/);
+    const match = line.match(/^.*?:(\d+)\.\s+(.+)/);
 
     if (match) {
       const lineNumber = parseInt(match[1], 10) - 1;

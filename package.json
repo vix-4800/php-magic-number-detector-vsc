@@ -38,6 +38,11 @@
                         "type": "string"
                     },
                     "description": "String patterns to ignore"
+                },
+                "phpmnd.extensions": {
+                    "type": "string",
+                    "default": "all",
+                    "description": "Comma-separated list of extensions (e.g., 'default_parameter,assign,operation') or 'all' for all extensions. Available: argument, array, assign, default_parameter, operation, property, return, condition, switch_case"
                 }
             }
         }
