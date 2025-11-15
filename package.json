@@ -3,10 +3,29 @@
     "displayName": "PHP Magic Number Detector",
     "description": "Integrates phpmnd to detect magic numbers in PHP code and display them in the Problems panel",
     "version": "0.0.1",
+    "icon": "icon.png",
+    "publisher": "vix",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/vix-4800/php-magic-number-detector-vsc"
+    },
+    "author": {
+        "name": "Anton VIX",
+        "email": "Gordan.ei@protonmail.ch",
+        "url": "https://github.com/vix-4800"
+    },
+    "keywords": [
+        "php",
+        "phpmnd",
+        "magic numbers",
+        "code quality",
+        "linter"
+    ],
     "engines": {
         "vscode": "^1.105.0"
     },
     "categories": [
+        "Programming Languages",
         "Other"
     ],
     "activationEvents": [
