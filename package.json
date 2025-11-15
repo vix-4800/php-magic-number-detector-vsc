@@ -9,15 +9,43 @@
     "categories": [
         "Other"
     ],
-    "activationEvents": [],
+    "activationEvents": [
+        "onLanguage:php"
+    ],
     "main": "./out/extension.js",
     "contributes": {
         "commands": [
             {
-                "command": "php-magic-number-detector.helloWorld",
-                "title": "Hello World"
+                "command": "php-magic-number-detector.check",
+                "title": "PHPMND: Check for Magic Numbers"
             }
-        ]
+        ],
+        "configuration": {
+            "title": "PHP Magic Number Detector",
+            "properties": {
+                "phpmnd.executablePath": {
+                    "type": "string",
+                    "default": "phpmnd",
+                    "description": "Path to the phpmnd executable. If phpmnd is in your PATH, use 'phpmnd'. Otherwise, provide the full path."
+                },
+                "phpmnd.ignoreNumbers": {
+                    "type": "array",
+                    "default": [],
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Numbers to ignore (e.g., ['0', '1'])"
+                },
+                "phpmnd.ignoreStrings": {
+                    "type": "array",
+                    "default": [],
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "String patterns to ignore"
+                }
+            }
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
