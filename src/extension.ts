@@ -5,22 +5,16 @@ import * as vscode from 'vscode';
 
 const execAsync = promisify(exec);
 
-// Diagnostic collection for magic numbers
 const diagnosticCollection = vscode.languages.createDiagnosticCollection('phpmnd');
-
-// Output channel for logging
 let outputChannel: vscode.OutputChannel;
 
-// This method is called when your extension is activated
 export function activate(context: vscode.ExtensionContext) {
   console.log('PHP Magic Number Detector extension is now active!');
 
-  // Create output channel
   outputChannel = vscode.window.createOutputChannel('PHP Magic Number Detector');
   outputChannel.appendLine('PHP Magic Number Detector extension activated');
   outputChannel.appendLine(`Extension path: ${context.extensionPath}`);
 
-  // Register command to manually check current file
   const checkCommand = vscode.commands.registerCommand(
     'php-magic-number-detector.check',
     async () => {
@@ -34,21 +28,18 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  // Check on save
   const onSave = vscode.workspace.onDidSaveTextDocument(async (document) => {
     if (document.languageId === 'php') {
       await checkDocument(document, context.extensionPath);
     }
   });
 
-  // Check on open
   const onOpen = vscode.workspace.onDidOpenTextDocument(async (document) => {
     if (document.languageId === 'php') {
       await checkDocument(document, context.extensionPath);
     }
   });
 
-  // Check currently open document on activation
   if (vscode.window.activeTextEditor?.document.languageId === 'php') {
     checkDocument(vscode.window.activeTextEditor.document, context.extensionPath);
   }
@@ -60,7 +51,6 @@ async function checkDocument(document: vscode.TextDocument, extensionPath: strin
   const filePath = document.uri.fsPath;
   const fileName = path.basename(filePath);
 
-  // Log start of analysis
   const timestamp = new Date().toLocaleTimeString();
   outputChannel.appendLine('');
   outputChannel.appendLine(`[${timestamp}] Starting analysis...`);
@@ -68,17 +58,14 @@ async function checkDocument(document: vscode.TextDocument, extensionPath: strin
   outputChannel.appendLine(`Full path: ${filePath}`);
 
   try {
-    // Get configuration
     const config = vscode.workspace.getConfiguration('phpmnd');
     const ignoreNumbers = config.get<string[]>('ignoreNumbers', []);
     const ignoreStrings = config.get<string[]>('ignoreStrings', []);
 
-    // Path to bundled phpmnd.phar
     const phpmndPath = path.join(extensionPath, 'phpmnd.phar');
     outputChannel.appendLine(`Using phpmnd: ${phpmndPath}`);
 
-    // Build command with options
-    let command = `php "${phpmndPath}" "${filePath}" --non-zero-exit-on-violation --hint`;
+    let command = `php "${phpmndPath}" "${filePath}" --hint`;
 
     if (ignoreNumbers.length > 0) {
       command += ` --ignore-numbers=${ignoreNumbers.join(',')}`;
@@ -94,7 +81,6 @@ async function checkDocument(document: vscode.TextDocument, extensionPath: strin
 
     const startTime = Date.now();
 
-    // Execute phpmnd
     const { stdout, stderr } = await execAsync(command, {
       cwd: vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath,
     });
@@ -102,11 +88,9 @@ async function checkDocument(document: vscode.TextDocument, extensionPath: strin
     const duration = Date.now() - startTime;
     const output = stdout + stderr;
 
-    // Parse output and create diagnostics
     const diagnostics = parsePhpmndOutput(output, document);
     diagnosticCollection.set(document.uri, diagnostics);
 
-    // Log results
     const endTimestamp = new Date().toLocaleTimeString();
     outputChannel.appendLine(`[${endTimestamp}] Analysis completed in ${duration}ms`);
 
@@ -127,15 +111,11 @@ async function checkDocument(document: vscode.TextDocument, extensionPath: strin
       outputChannel.appendLine(output);
     }
   } catch (error: any) {
-    const duration = Date.now() - Date.now();
-
-    // phpmnd returns non-zero exit code when violations are found
     if (error.stdout || error.stderr) {
       const output = error.stdout + error.stderr;
       const diagnostics = parsePhpmndOutput(output, document);
       diagnosticCollection.set(document.uri, diagnostics);
 
-      // Log results
       const endTimestamp = new Date().toLocaleTimeString();
       outputChannel.appendLine(`[${endTimestamp}] Analysis completed`);
 
@@ -156,7 +136,6 @@ async function checkDocument(document: vscode.TextDocument, extensionPath: strin
         outputChannel.appendLine(output);
       }
     } else {
-      // Real error - phpmnd execution failed
       const errorTimestamp = new Date().toLocaleTimeString();
       outputChannel.appendLine(`[${errorTimestamp}] ✗ Error running phpmnd`);
       outputChannel.appendLine(`Error: ${error.message}`);
@@ -168,7 +147,6 @@ async function checkDocument(document: vscode.TextDocument, extensionPath: strin
 
       console.error('Error running phpmnd:', error);
 
-      // Only show error message once per session
       if (!hasShownError) {
         hasShownError = true;
         const response = await vscode.window.showErrorMessage(
@@ -183,7 +161,6 @@ async function checkDocument(document: vscode.TextDocument, extensionPath: strin
         }
       }
 
-      // Clear diagnostics if phpmnd can't run
       diagnosticCollection.set(document.uri, []);
     }
   }
@@ -196,18 +173,15 @@ function parsePhpmndOutput(output: string, document: vscode.TextDocument): vscod
   const lines = output.split('\n');
 
   for (const line of lines) {
-    // Parse phpmnd output format: path/to/file.php:123 Magic number: 42
-    // Or: path/to/file.php:123: Magic number: 42
     const match = line.match(/^.*?:(\d+):?\s+(.+)/);
 
     if (match) {
-      const lineNumber = parseInt(match[1], 10) - 1; // VS Code uses 0-based line numbers
+      const lineNumber = parseInt(match[1], 10) - 1;
       const message = match[2].trim();
 
       if (lineNumber >= 0 && lineNumber < document.lineCount) {
         const lineText = document.lineAt(lineNumber).text;
 
-        // Try to find the magic number in the line
         const numberMatch = message.match(/Magic number: ([\d.]+)/);
         let range: vscode.Range;
 
@@ -218,11 +192,9 @@ function parsePhpmndOutput(output: string, document: vscode.TextDocument): vscod
           if (index !== -1) {
             range = new vscode.Range(lineNumber, index, lineNumber, index + magicNumber.length);
           } else {
-            // Fallback: highlight the whole line
             range = new vscode.Range(lineNumber, 0, lineNumber, lineText.length);
           }
         } else {
-          // Fallback: highlight the whole line
           range = new vscode.Range(lineNumber, 0, lineNumber, lineText.length);
         }
 
@@ -237,7 +209,6 @@ function parsePhpmndOutput(output: string, document: vscode.TextDocument): vscod
   return diagnostics;
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {
   diagnosticCollection.clear();
   diagnosticCollection.dispose();
