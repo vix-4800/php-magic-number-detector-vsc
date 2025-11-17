@@ -2,7 +2,7 @@
     "name": "php-magic-number-detector",
     "displayName": "PHP Magic Number Detector",
     "description": "Integrates phpmnd to detect magic numbers in PHP code and display them in the Problems panel",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "icon": "icon.png",
     "publisher": "vix",
     "repository": {
@@ -42,6 +42,11 @@
         "configuration": {
             "title": "PHP Magic Number Detector",
             "properties": {
+                "phpmnd.enable": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable or disable the PHP Magic Number Detector extension"
+                },
                 "phpmnd.ignoreNumbers": {
                     "type": "array",
                     "default": [],

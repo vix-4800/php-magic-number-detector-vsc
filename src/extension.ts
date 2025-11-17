@@ -48,6 +48,14 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 async function checkDocument(document: vscode.TextDocument, extensionPath: string): Promise<void> {
+  const config = vscode.workspace.getConfiguration('phpmnd');
+  const isEnabled = config.get<boolean>('enable', true);
+
+  if (!isEnabled) {
+    diagnosticCollection.set(document.uri, []);
+    return;
+  }
+
   const filePath = document.uri.fsPath;
   const fileName = path.basename(filePath);
 
@@ -58,7 +66,6 @@ async function checkDocument(document: vscode.TextDocument, extensionPath: strin
   outputChannel.appendLine(`Full path: ${filePath}`);
 
   try {
-    const config = vscode.workspace.getConfiguration('phpmnd');
     const ignoreNumbers = config.get<string[]>('ignoreNumbers', []);
     const ignoreStrings = config.get<string[]>('ignoreStrings', []);
     const extensions = config.get<string>('extensions', 'all');
